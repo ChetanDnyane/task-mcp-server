@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class TaskMcpServerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TaskMcpServerApplication.class, args);
+		SpringApplication.run(
+				TaskMcpServerApplication.class,
+				args
+		);
 	}
-
 }
