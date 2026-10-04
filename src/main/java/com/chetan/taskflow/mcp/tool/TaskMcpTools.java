@@ -246,6 +246,67 @@ public class TaskMcpTools {
                 + " deleted successfully.";
     }
 
+    @McpTool(
+            name = "updateTaskStatus",
+            description = """
+                Change the status of an existing TaskFlow task
+                belonging to the currently authenticated user.
+
+                Use this when the user asks to start, complete,
+                reopen or otherwise change the status of a task.
+
+                Valid statuses are TODO, IN_PROGRESS and COMPLETED.
+                """
+    )
+    public TaskInfo updateTaskStatus(
+            Long taskId,
+            TaskStatus status,
+            McpMeta meta) {
+
+        String authorizationHeader =
+                getAuthorizationHeader(meta);
+
+        // First retrieve the existing task
+        TaskInfo existingTask =
+                restClient
+                        .get()
+                        .uri("/api/tasks/{taskId}", taskId)
+                        .header(
+                                HttpHeaders.AUTHORIZATION,
+                                authorizationHeader
+                        )
+                        .retrieve()
+                        .body(TaskInfo.class);
+
+        if (existingTask == null) {
+            throw new IllegalStateException(
+                    "Task " + taskId + " was not found"
+            );
+        }
+
+        // Preserve everything except status
+        UpdateTaskRequest request =
+                new UpdateTaskRequest(
+                        existingTask.title(),
+                        existingTask.description(),
+                        status,
+                        existingTask.priority(),
+                        existingTask.dueDate()
+                );
+
+        return restClient
+                .put()
+                .uri("/api/tasks/{taskId}", taskId)
+                .header(
+                        HttpHeaders.AUTHORIZATION,
+                        authorizationHeader
+                )
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .retrieve()
+                .body(TaskInfo.class);
+    }
+
     // =========================================================
     // SECURITY
     // =========================================================
